@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Executive Sales Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="hero hero-single">
+      <div class="hero-copy">
+        <div class="eyebrow">Executive Performance Dashboard</div>
+        <h1>Sales and ACM Performance</h1>
+        <p class="hero-text">
+          Live static dashboard powered by <code>data.csv</code>. All KPIs and trends are calculated
+          automatically from raw retainer data.
+        </p>
+        <div class="hero-meta">
+          <span class="meta-chip">Contract value</span>
+          <span class="meta-chip">Deposits</span>
+          <span class="meta-chip">ACM performance</span>
+          <span class="meta-chip">Service performance</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="filters-section glass-card">
+      <div class="filters-left">
+        <div class="section-title">Dashboard filters</div>
+        <div class="section-subtitle">Refine the view without changing the source data.</div>
+      </div>
+      <div class="filters-grid">
+        <label class="control">
+          <span>ACM</span>
+          <select id="acmFilter">
+            <option value="All">All ACMs</option>
+          </select>
+        </label>
+        <label class="control">
+          <span>Service</span>
+          <select id="serviceFilter">
+            <option value="All">All services</option>
+          </select>
+        </label>
+        <label class="control">
+          <span>Date From</span>
+          <input id="dateFrom" type="date" />
+        </label>
+        <label class="control">
+          <span>Date To</span>
+          <input id="dateTo" type="date" />
+        </label>
+      </div>
+    </section>
+
+    <section class="kpi-grid kpi-grid-4">
+      <article class="kpi-card glass-card accent-blue">
+        <div class="kpi-label">Total Contract Value</div>
+        <div class="kpi-value" id="kpiRevenue">$0</div>
+        <div class="kpi-foot" id="kpiRevenueFoot">Across all retained matters</div>
+      </article>
+      <article class="kpi-card glass-card accent-green">
+        <div class="kpi-label">Total Initial Deposits</div>
+        <div class="kpi-value" id="kpiDeposits">$0</div>
+        <div class="kpi-foot" id="kpiDepositsFoot">Initial cash collected</div>
+      </article>
+      <article class="kpi-card glass-card accent-violet">
+        <div class="kpi-label">Deals Closed</div>
+        <div class="kpi-value" id="kpiDeals">0</div>
+        <div class="kpi-foot" id="kpiDealsFoot">Total retained rows</div>
+      </article>
+      <article class="kpi-card glass-card accent-amber">
+        <div class="kpi-label">Average Deal Size</div>
+        <div class="kpi-value" id="kpiAvgDeal">$0</div>
+        <div class="kpi-foot" id="kpiAvgDealFoot">Average contract value per matter</div>
+      </article>
+      <article class="kpi-card glass-card accent-cyan">
+        <div class="kpi-label">Avg Deposit %</div>
+        <div class="kpi-value" id="kpiAvgDepositPct">0%</div>
+        <div class="kpi-foot" id="kpiAvgDepositPctFoot">Average upfront percentage per deal</div>
+      </article>
+    </section>
+
+    <section class="chart-grid">
+      <article class="chart-card glass-card span-6">
+        <div class="card-header">
+          <div>
+            <h3>Monthly Contract Value Trend</h3>
+            <p>Contract value over time, derived from Date Retained.</p>
+          </div>
+        </div>
+        <canvas id="monthlyRevenueChart"></canvas>
+      </article>
+
+      <article class="chart-card glass-card span-6">
+        <div class="card-header">
+          <div>
+            <h3>Monthly Deposit Trend</h3>
+            <p>Initial deposits collected by month.</p>
+          </div>
+        </div>
+        <canvas id="monthlyDepositChart"></canvas>
+      </article>
+
+      <article class="chart-card glass-card span-4">
+        <div class="card-header">
+          <div>
+            <h3>Monthly Deal Count</h3>
+            <p>Retained deal volume by month.</p>
+          </div>
+        </div>
+        <canvas id="monthlyDealsChart"></canvas>
+      </article>
+
+      <article class="chart-card glass-card span-4">
+        <div class="card-header">
+          <div>
+            <h3>Revenue by ACM</h3>
+            <p>Total contract value closed by ACM.</p>
+          </div>
+        </div>
+        <canvas id="revenueByAcmChart"></canvas>
+      </article>
+
+      <article class="chart-card glass-card span-4">
+        <div class="card-header">
+          <div>
+            <h3>Deals by ACM</h3>
+            <p>Closed matters by ACM.</p>
+          </div>
+        </div>
+        <canvas id="dealsByAcmChart"></canvas>
+      </article>
+
+      <article class="chart-card glass-card span-4">
+        <div class="card-header">
+          <div>
+            <h3>Average Deal Size by ACM</h3>
+            <p>Contract value per matter, by ACM.</p>
+          </div>
+        </div>
+        <canvas id="avgDealByAcmChart"></canvas>
+      </article>
+
+      <article class="chart-card glass-card span-12">
+        <div class="card-header">
+          <div>
+            <h3>Revenue by Service</h3>
+            <p>Best-performing services by contract value.</p>
+          </div>
+        </div>
+        <canvas id="revenueByServiceChart"></canvas>
+      </article>
+    </section>
+
+    <section class="table-grid table-grid-single">
+      <article class="glass-card table-card">
+        <div class="card-header">
+          <div>
+            <h3>Recent Retainers</h3>
+            <p>Most recent retained matters in the selected view.</p>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Service</th>
+                <th>Date Retained</th>
+                <th>ACM</th>
+                <th class="num">K Value</th>
+                <th class="num">Initial Deposit</th>
+              </tr>
+            </thead>
+            <tbody id="recentRetainersBody"></tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
